@@ -1,0 +1,205 @@
+--strategy fedavg --scenario dir0.5 --seed 42 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.5 --seed 42 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.5 --seed 42 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.5 --seed 42 --rounds 100 --out results/main
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.5 --seed 43 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.5 --seed 43 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.5 --seed 43 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.5 --seed 43 --rounds 100 --out results/main
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.5 --seed 44 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.5 --seed 44 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.5 --seed 44 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.5 --seed 44 --rounds 100 --out results/main
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.5 --seed 45 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.5 --seed 45 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.5 --seed 45 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.5 --seed 45 --rounds 100 --out results/main
+--strategy raa --scenario dir0.5 --seed 45 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.5 --seed 46 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.5 --seed 46 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.5 --seed 46 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.5 --seed 46 --rounds 100 --out results/main
+--strategy raa --scenario dir0.5 --seed 46 --rounds 100 --out results/main
+--strategy fedavg --scenario temporal --seed 42 --rounds 100 --out results/main
+--strategy fedprox --scenario temporal --seed 42 --rounds 100 --out results/main
+--strategy scaffold --scenario temporal --seed 42 --rounds 100 --out results/main
+--strategy fltrust --scenario temporal --seed 42 --rounds 100 --out results/main
+--strategy raa --scenario temporal --seed 42 --rounds 100 --out results/main
+--strategy fedavg --scenario temporal --seed 43 --rounds 100 --out results/main
+--strategy fedprox --scenario temporal --seed 43 --rounds 100 --out results/main
+--strategy scaffold --scenario temporal --seed 43 --rounds 100 --out results/main
+--strategy fltrust --scenario temporal --seed 43 --rounds 100 --out results/main
+--strategy raa --scenario temporal --seed 43 --rounds 100 --out results/main
+--strategy fedavg --scenario temporal --seed 44 --rounds 100 --out results/main
+--strategy fedprox --scenario temporal --seed 44 --rounds 100 --out results/main
+--strategy scaffold --scenario temporal --seed 44 --rounds 100 --out results/main
+--strategy fltrust --scenario temporal --seed 44 --rounds 100 --out results/main
+--strategy raa --scenario temporal --seed 44 --rounds 100 --out results/main
+--strategy fedavg --scenario temporal --seed 45 --rounds 100 --out results/main
+--strategy fedprox --scenario temporal --seed 45 --rounds 100 --out results/main
+--strategy scaffold --scenario temporal --seed 45 --rounds 100 --out results/main
+--strategy fltrust --scenario temporal --seed 45 --rounds 100 --out results/main
+--strategy raa --scenario temporal --seed 45 --rounds 100 --out results/main
+--strategy fedavg --scenario temporal --seed 46 --rounds 100 --out results/main
+--strategy fedprox --scenario temporal --seed 46 --rounds 100 --out results/main
+--strategy scaffold --scenario temporal --seed 46 --rounds 100 --out results/main
+--strategy fltrust --scenario temporal --seed 46 --rounds 100 --out results/main
+--strategy raa --scenario temporal --seed 46 --rounds 100 --out results/main
+--strategy fedavg --scenario iid --seed 42 --rounds 100 --out results/main
+--strategy fedprox --scenario iid --seed 42 --rounds 100 --out results/main
+--strategy scaffold --scenario iid --seed 42 --rounds 100 --out results/main
+--strategy fltrust --scenario iid --seed 42 --rounds 100 --out results/main
+--strategy raa --scenario iid --seed 42 --rounds 100 --out results/main
+--strategy fedavg --scenario iid --seed 43 --rounds 100 --out results/main
+--strategy fedprox --scenario iid --seed 43 --rounds 100 --out results/main
+--strategy scaffold --scenario iid --seed 43 --rounds 100 --out results/main
+--strategy fltrust --scenario iid --seed 43 --rounds 100 --out results/main
+--strategy raa --scenario iid --seed 43 --rounds 100 --out results/main
+--strategy fedavg --scenario iid --seed 44 --rounds 100 --out results/main
+--strategy fedprox --scenario iid --seed 44 --rounds 100 --out results/main
+--strategy scaffold --scenario iid --seed 44 --rounds 100 --out results/main
+--strategy fltrust --scenario iid --seed 44 --rounds 100 --out results/main
+--strategy raa --scenario iid --seed 44 --rounds 100 --out results/main
+--strategy fedavg --scenario iid --seed 45 --rounds 100 --out results/main
+--strategy fedprox --scenario iid --seed 45 --rounds 100 --out results/main
+--strategy scaffold --scenario iid --seed 45 --rounds 100 --out results/main
+--strategy fltrust --scenario iid --seed 45 --rounds 100 --out results/main
+--strategy raa --scenario iid --seed 45 --rounds 100 --out results/main
+--strategy fedavg --scenario iid --seed 46 --rounds 100 --out results/main
+--strategy fedprox --scenario iid --seed 46 --rounds 100 --out results/main
+--strategy scaffold --scenario iid --seed 46 --rounds 100 --out results/main
+--strategy fltrust --scenario iid --seed 46 --rounds 100 --out results/main
+--strategy raa --scenario iid --seed 46 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.1 --seed 42 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.1 --seed 42 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.1 --seed 42 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.1 --seed 42 --rounds 100 --out results/main
+--strategy raa --scenario dir0.1 --seed 42 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.1 --seed 43 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.1 --seed 43 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.1 --seed 43 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.1 --seed 43 --rounds 100 --out results/main
+--strategy raa --scenario dir0.1 --seed 43 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.1 --seed 44 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.1 --seed 44 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.1 --seed 44 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.1 --seed 44 --rounds 100 --out results/main
+--strategy raa --scenario dir0.1 --seed 44 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.1 --seed 45 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.1 --seed 45 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.1 --seed 45 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.1 --seed 45 --rounds 100 --out results/main
+--strategy raa --scenario dir0.1 --seed 45 --rounds 100 --out results/main
+--strategy fedavg --scenario dir0.1 --seed 46 --rounds 100 --out results/main
+--strategy fedprox --scenario dir0.1 --seed 46 --rounds 100 --out results/main
+--strategy scaffold --scenario dir0.1 --seed 46 --rounds 100 --out results/main
+--strategy fltrust --scenario dir0.1 --seed 46 --rounds 100 --out results/main
+--strategy raa --scenario dir0.1 --seed 46 --rounds 100 --out results/main
+--strategy fedavg --scenario dir1.0 --seed 42 --rounds 100 --out results/main
+--strategy fedprox --scenario dir1.0 --seed 42 --rounds 100 --out results/main
+--strategy scaffold --scenario dir1.0 --seed 42 --rounds 100 --out results/main
+--strategy fltrust --scenario dir1.0 --seed 42 --rounds 100 --out results/main
+--strategy raa --scenario dir1.0 --seed 42 --rounds 100 --out results/main
+--strategy fedavg --scenario dir1.0 --seed 43 --rounds 100 --out results/main
+--strategy fedprox --scenario dir1.0 --seed 43 --rounds 100 --out results/main
+--strategy scaffold --scenario dir1.0 --seed 43 --rounds 100 --out results/main
+--strategy fltrust --scenario dir1.0 --seed 43 --rounds 100 --out results/main
+--strategy raa --scenario dir1.0 --seed 43 --rounds 100 --out results/main
+--strategy fedavg --scenario dir1.0 --seed 44 --rounds 100 --out results/main
+--strategy fedprox --scenario dir1.0 --seed 44 --rounds 100 --out results/main
+--strategy scaffold --scenario dir1.0 --seed 44 --rounds 100 --out results/main
+--strategy fltrust --scenario dir1.0 --seed 44 --rounds 100 --out results/main
+--strategy raa --scenario dir1.0 --seed 44 --rounds 100 --out results/main
+--strategy fedavg --scenario dir1.0 --seed 45 --rounds 100 --out results/main
+--strategy fedprox --scenario dir1.0 --seed 45 --rounds 100 --out results/main
+--strategy scaffold --scenario dir1.0 --seed 45 --rounds 100 --out results/main
+--strategy fltrust --scenario dir1.0 --seed 45 --rounds 100 --out results/main
+--strategy raa --scenario dir1.0 --seed 45 --rounds 100 --out results/main
+--strategy fedavg --scenario dir1.0 --seed 46 --rounds 100 --out results/main
+--strategy fedprox --scenario dir1.0 --seed 46 --rounds 100 --out results/main
+--strategy scaffold --scenario dir1.0 --seed 46 --rounds 100 --out results/main
+--strategy fltrust --scenario dir1.0 --seed 46 --rounds 100 --out results/main
+--strategy raa --scenario dir1.0 --seed 46 --rounds 100 --out results/main
+--strategy fedavg_ft --scenario dir0.5 --seed 42 --rounds 100 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --anchor n1000 --tag raa_n1000 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --anchor n200 --tag raa_n200 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --anchor norare --tag raa_norare --out results/anchor
+--strategy fedavg_ft --scenario dir0.5 --seed 43 --rounds 100 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --anchor n1000 --tag raa_n1000 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --anchor n200 --tag raa_n200 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --anchor norare --tag raa_norare --out results/anchor
+--strategy fedavg_ft --scenario dir0.5 --seed 44 --rounds 100 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --anchor n1000 --tag raa_n1000 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --anchor n200 --tag raa_n200 --out results/anchor
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --anchor norare --tag raa_norare --out results/anchor
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --beta 0,0.3333,0.3333,0.3334 --tag raa_noA --out results/loo
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --beta 0.5,0,0.25,0.25 --tag raa_noS --out results/loo
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/loo
+--strategy raa --scenario dir0.5 --seed 42 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/loo
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --beta 0,0.3333,0.3333,0.3334 --tag raa_noA --out results/loo
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --beta 0.5,0,0.25,0.25 --tag raa_noS --out results/loo
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/loo
+--strategy raa --scenario dir0.5 --seed 43 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/loo
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --beta 0,0.3333,0.3333,0.3334 --tag raa_noA --out results/loo
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --beta 0.5,0,0.25,0.25 --tag raa_noS --out results/loo
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/loo
+--strategy raa --scenario dir0.5 --seed 44 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/loo
+--strategy raa --scenario temporal --seed 42 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/temporal_abl
+--strategy raa --scenario temporal --seed 42 --rounds 100 --gamma 1.0 --tag raa_gamma1 --out results/temporal_abl
+--strategy raa --scenario temporal --seed 43 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/temporal_abl
+--strategy raa --scenario temporal --seed 43 --rounds 100 --gamma 1.0 --tag raa_gamma1 --out results/temporal_abl
+--strategy raa --scenario temporal --seed 44 --rounds 100 --beta 0.5,0.25,0.25,0 --tag raa_noD --out results/temporal_abl
+--strategy raa --scenario temporal --seed 44 --rounds 100 --gamma 1.0 --tag raa_gamma1 --out results/temporal_abl
+--strategy fedavg --scenario dir0.5 --seed 42 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy fedprox --scenario dir0.5 --seed 42 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy scaffold --scenario dir0.5 --seed 42 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 3 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel3
+--strategy fedavg --scenario dir0.5 --seed 43 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy fedprox --scenario dir0.5 --seed 43 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy scaffold --scenario dir0.5 --seed 43 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 3 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel3
+--strategy fedavg --scenario dir0.5 --seed 44 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy fedprox --scenario dir0.5 --seed 44 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy scaffold --scenario dir0.5 --seed 44 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 3 --drop 0.5  --out results/unrel3
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 3 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel3
+--strategy fedavg --scenario dir0.5 --seed 42 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy fedprox --scenario dir0.5 --seed 42 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy scaffold --scenario dir0.5 --seed 42 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 5 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel5
+--strategy fedavg --scenario dir0.5 --seed 43 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy fedprox --scenario dir0.5 --seed 43 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy scaffold --scenario dir0.5 --seed 43 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 5 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel5
+--strategy fedavg --scenario dir0.5 --seed 44 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy fedprox --scenario dir0.5 --seed 44 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy scaffold --scenario dir0.5 --seed 44 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 5 --drop 0.5  --out results/unrel5
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 5 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel5
+--strategy fedavg --scenario dir0.5 --seed 42 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy fedprox --scenario dir0.5 --seed 42 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy scaffold --scenario dir0.5 --seed 42 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 42 --rounds 50 --unreliable 7 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel7
+--strategy fedavg --scenario dir0.5 --seed 43 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy fedprox --scenario dir0.5 --seed 43 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy scaffold --scenario dir0.5 --seed 43 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 43 --rounds 50 --unreliable 7 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel7
+--strategy fedavg --scenario dir0.5 --seed 44 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy fedprox --scenario dir0.5 --seed 44 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy scaffold --scenario dir0.5 --seed 44 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 7 --drop 0.5  --out results/unrel7
+--strategy raa --scenario dir0.5 --seed 44 --rounds 50 --unreliable 7 --drop 0.5 --beta 0.5,0.25,0,0.25 --tag raa_noC --out results/unrel7
+CENTRAL 42
+CENTRAL 43
+CENTRAL 44
+CENTRAL 45
+CENTRAL 46
