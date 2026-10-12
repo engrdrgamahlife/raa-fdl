@@ -10,17 +10,43 @@ from torch import nn
 
 
 class CNN1D(nn.Module):
-    def __init__(self, n_features: int, n_classes: int, width: int = 32):
+    """norm='bn' (BatchNorm, default) or 'gn' (GroupNorm with 8 groups, no running statistics)."""
+
+    def __init__(self, n_features: int, n_classes: int, width: int = 32, norm: str = "bn"):
         super().__init__()
+        N = (lambda c: nn.BatchNorm1d(c)) if norm == "bn" else (lambda c: nn.GroupNorm(8, c))
         self.net = nn.Sequential(
-            nn.Conv1d(1, width, 3, padding=1), nn.BatchNorm1d(width), nn.ReLU(),
+            nn.Conv1d(1, width, 3, padding=1), N(width), nn.ReLU(),
             nn.MaxPool1d(2),
-            nn.Conv1d(width, 2 * width, 3, padding=1), nn.BatchNorm1d(2 * width), nn.ReLU(),
+            nn.Conv1d(width, 2 * width, 3, padding=1), N(2 * width), nn.ReLU(),
             nn.AdaptiveAvgPool1d(1), nn.Flatten(),
             nn.Linear(2 * width, 64), nn.ReLU(), nn.Linear(64, n_classes))
 
     def forward(self, x):
         return self.net(x.unsqueeze(1))
+
+
+class MLP(nn.Module):
+    """Plain multilayer perceptron for tabular flow features (no normalisation layers)."""
+
+    def __init__(self, n_features: int, n_classes: int, hidden=(128, 64)):
+        super().__init__()
+        layers, d = [], n_features
+        for h in hidden:
+            layers += [nn.Linear(d, h), nn.ReLU()]
+            d = h
+        self.net = nn.Sequential(*layers, nn.Linear(d, n_classes))
+
+    def forward(self, x):
+        return self.net(x)
+
+
+def split_head(model: nn.Module):
+    """(feature extractor, linear classifier) for CNN1D and MLP, used by CCVR."""
+    body = nn.Sequential(*list(model.net.children())[:-1])
+    if isinstance(model, CNN1D):
+        return (lambda x: body(x.unsqueeze(1))), model.net[-1]
+    return body, model.net[-1]
 
 
 class RecurrentNet(nn.Module):
@@ -50,6 +76,10 @@ def build_model(name: str, n_features: int, n_classes: int) -> nn.Module:
     name = name.lower()
     if name == "cnn":
         return CNN1D(n_features, n_classes)
+    if name == "cnn_gn":
+        return CNN1D(n_features, n_classes, norm="gn")
+    if name == "mlp":
+        return MLP(n_features, n_classes)
     if name == "lstm":
         return RecurrentNet(n_features, n_classes)
     if name == "bilstm":

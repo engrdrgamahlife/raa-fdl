@@ -1,0 +1,101 @@
+{
+ "class_counts": [
+  [
+   9714,
+   1835,
+   13,
+   114,
+   252,
+   873,
+   272,
+   4247,
+   196
+  ],
+  [
+   2550,
+   2309,
+   22,
+   190,
+   365,
+   1277,
+   341,
+   10137,
+   293
+  ]
+ ],
+ "jsd": {
+  "mean_pairwise": 0.14731643483694173,
+  "mean_to_global": 0.038233346317041304
+ },
+ "js_distance_mean_pairwise": 0.3838182315067143,
+ "feature_shift": {
+  "per_client_auc": [
+   0.6860086419753086,
+   0.6908049382716048
+  ],
+  "mean_auc": 0.6884067901234567
+ },
+ "test_classes_missing_from_all_clients": [],
+ "majority_test": {
+  "macro_f1": 0.06472206472206472,
+  "accuracy": 0.4109333333333333,
+  "per_class": {
+   "0": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 2628
+   },
+   "1": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 888
+   },
+   "2": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 8
+   },
+   "3": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 65
+   },
+   "4": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 132
+   },
+   "5": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 460
+   },
+   "6": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 132
+   },
+   "7": {
+    "precision": 0.4109333333333333,
+    "recall": 1.0,
+    "f1": 0.5824985824985826,
+    "support": 3082
+   },
+   "8": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 105
+   }
+  }
+ },
+ "anchor_size": 7500,
+ "n_train": 35000
+}

@@ -125,6 +125,23 @@ def split_and_scale(ds: Dataset, seed: int, val=0.15, test=0.15) -> Splits:
     return Splits(f(tr), f(va), f(te), ds.group[tr], sc)
 
 
+def split_chrono(ds: Dataset, t: np.ndarray, seed: int, val=0.15, test=0.15) -> Splits:
+    """Per-class chronological split: within each class, the earliest 70% of records (by flow timestamp) train,
+    the next 15% validate and the latest 15% test, so no test flow precedes a training flow of its class.
+    Ties in time are broken at random with the seed. The scaler is fitted on the training split only."""
+    rng = np.random.default_rng(seed)
+    tr, va, te = [], [], []
+    for c in np.unique(ds.y):
+        idx = np.where(ds.y == c)[0]
+        idx = idx[np.lexsort((rng.random(len(idx)), t[idx]))]
+        n = len(idx); a_ = int(round(n * (1 - val - test))); b_ = int(round(n * (1 - test)))
+        tr.append(idx[:a_]); va.append(idx[a_:b_]); te.append(idx[b_:])
+    tr, va, te = (np.sort(np.concatenate(z)) for z in (tr, va, te))
+    sc = StandardScaler().fit(ds.X[tr])
+    f = lambda i: (sc.transform(ds.X[i]).astype(np.float32), ds.y[i])
+    return Splits(f(tr), f(va), f(te), ds.group[tr], sc)
+
+
 # ---------------------------------------------------------------- partitions
 def partition(y: np.ndarray, groups: np.ndarray, scheme: str, K: int, seed: int, alpha: float = 0.5):
     """Return a list of K index arrays into the training split.

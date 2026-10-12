@@ -1,4 +1,8 @@
-"""Federated learning simulator: FedAvg, FedProx, SCAFFOLD, RAA-FDL, FLTrust, FedAvg+server fine-tuning.
+"""Federated learning simulator: FedAvg, FedProx, SCAFFOLD, RAA-FDL, FLTrust, FedAvg+server fine-tuning,
+SCAFFOLD-N (size-weighted SCAFFOLD updates), raa_scaffold (SCAFFOLD local training + RAA-FDL weights on the
+updates), FedAvgM and FedAdam (server optimisers on the size-weighted mean update) and FedDisco (discrepancy-aware
+weights). Local-loss options: logit adjustment (la_tau, la_eps, la_multi_only) and FedRS restricted softmax. FLConfig.logit_adjust=True adds the client's add-one smoothed log label prior to the logits during local
+training (logit adjustment / balanced softmax) for any strategy.
 
 Design choices that the review asked to make explicit (all configurable, all logged):
   * identical global initialisation per seed for every strategy;
@@ -27,7 +31,11 @@ from torch.nn.utils import parameters_to_vector, vector_to_parameters
 
 from .metrics import evaluate
 
-STRATEGIES = ("fedavg", "fedprox", "scaffold", "raa", "fltrust", "fedavg_ft")
+STRATEGIES = ("fedavg", "fedprox", "scaffold", "raa", "fltrust", "fedavg_ft", "scaffold_n", "raa_scaffold",
+              "fedavgm", "fedadam", "feddisco")
+SERVER_OPT = ("fedavgm", "fedadam")
+SCAFFOLD_TYPE = ("scaffold", "scaffold_n", "raa_scaffold")
+RAA_TYPE = ("raa", "raa_scaffold")
 
 
 @dataclass
@@ -51,6 +59,22 @@ class FLConfig:
     r0: float | None = None             # initial smoothed reliability; None -> 1/K (as in the paper)
     # server-side training for fltrust / fedavg_ft
     server_epochs: int = 1
+    # logit adjustment (balanced softmax) in local training: add log of the client's smoothed label prior
+    logit_adjust: bool = False
+    la_tau: float = 1.0                 # scale of the log-prior offset (Menon et al.'s tau)
+    la_eps: float = 1.0                 # additive smoothing of the client label counts
+    la_multi_only: bool = False         # apply LA only on clients that hold >= 2 classes
+    fedrs_alpha: float | None = None    # FedRS: scale logits of locally absent classes by alpha
+    # server optimisers (FedAvgM, FedAdam; Hsu et al. 2019, Reddi et al. 2021)
+    server_lr: float = 1.0
+    server_momentum: float = 0.9
+    adam_b1: float = 0.9
+    adam_b2: float = 0.99
+    adam_tau: float = 1e-3
+    # FedDisco (Ye et al. 2023): p_k ~ ReLU(n_k - a d_k + b)
+    disco_a: float = 0.5
+    disco_b: float = 0.1
+    fltrust_rescale: bool = True        # FLTrust's norm rescaling of client updates
     threads: int = 0                    # torch threads; 0 = library default
 
     def to_dict(self):
@@ -88,11 +112,27 @@ def local_train(model, X, y, cfg, seed, prox_ref=None, scaffold_c=None, scaffold
     Xt, yt = torch.from_numpy(X), torch.from_numpy(y)
     lossf = nn.CrossEntropyLoss()
     steps = 0
+    la = rs = None
+    if cfg.logit_adjust or cfg.fedrs_alpha is not None:
+        model.eval()
+        with torch.no_grad():
+            C = model(Xt[:2]).shape[1]
+        cnt = torch.bincount(yt, minlength=C).float()
+        model.train()
+        if cfg.logit_adjust and not (cfg.la_multi_only and int((cnt > 0).sum()) < 2):
+            la = cfg.la_tau * torch.log((cnt + cfg.la_eps) / (cnt.sum() + C * cfg.la_eps))
+        if cfg.fedrs_alpha is not None:
+            rs = torch.where(cnt > 0, torch.ones(C), torch.full((C,), float(cfg.fedrs_alpha)))
     for _ in range(cfg.local_epochs):
         for idx in _batches(len(yt), cfg.batch, gen):
             if len(idx) < 2:
                 continue                       # BatchNorm needs >1 sample
-            loss = lossf(model(Xt[idx]), yt[idx])
+            out = model(Xt[idx])
+            if rs is not None:
+                out = out * rs
+            if la is not None:
+                out = out + la
+            loss = lossf(out, yt[idx])
             if prox_ref is not None:           # live params vs constant global copy
                 loss = loss + 0.5 * cfg.mu * sum(((p - r) ** 2).sum() for p, r in zip(params, prox_ref))
             opt.zero_grad()
@@ -184,7 +224,7 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
     clients: list of (X, y) numpy arrays. val/test/anchor: (X, y). labels: the dataset's classes.
     """
     assert strategy in STRATEGIES, strategy
-    if strategy in ("raa", "fltrust", "fedavg_ft"):
+    if strategy in ("raa", "raa_scaffold", "fltrust", "fedavg_ft"):
         assert anchor is not None, f"{strategy} needs server-held anchor data"
     if cfg.threads:
         torch.set_num_threads(cfg.threads)
@@ -194,11 +234,19 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
     gmodel = model_fn()                                    # identical init per seed
     drop = np.array(cfg.drop_probs if cfg.drop_probs is not None else [0.0] * K)
     part_rng = np.random.default_rng([seed, 7919])         # identical dropout pattern per seed
-    tracker = RAATracker(K, cfg) if strategy == "raa" else None
+    tracker = RAATracker(K, cfg) if strategy in RAA_TYPE else None
     pnames = [n for n, _ in gmodel.named_parameters()]
-    if strategy == "scaffold":
+    if strategy in SCAFFOLD_TYPE:
         c_glob = [torch.zeros_like(p) for p in gmodel.parameters()]
         c_loc = [[torch.zeros_like(p) for p in gmodel.parameters()] for _ in range(K)]
+    sopt = {"m": None, "v": None}                          # server optimiser state
+    if strategy == "feddisco":
+        C_ = len(labels)
+        cnts = np.stack([np.bincount(c[1], minlength=C_) for c in clients]).astype(float)
+        # Ye et al. (2023) defaults: d_k = KL(D_k || uniform), rescaled to sum to 1 over clients (official code)
+        Dk = cnts / np.maximum(cnts.sum(1, keepdims=True), 1)
+        disco_d = np.array([float(np.sum(np.where(Dk[i] > 0, Dk[i] * np.log(Dk[i] * C_), 0.0))) for i in range(K)])
+        disco_d = disco_d / disco_d.sum() if disco_d.sum() > 0 else disco_d
     records = []
     t0 = time.time()
     start = 1
@@ -211,8 +259,10 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
         start = ck["round"] + 1
         if tracker:
             tracker.R, tracker.norms, tracker.hist = ck["tracker"]
-        if strategy == "scaffold":
+        if strategy in SCAFFOLD_TYPE:
             c_glob, c_loc = ck["scaffold"]
+        if ck.get("sopt") is not None:
+            sopt = ck["sopt"]
     for t in range(start, cfg.rounds + 1):
         u = part_rng.random(K)
         part = [i for i in range(K) if u[i] >= drop[i]]
@@ -231,12 +281,12 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
                 kw = {}
                 if strategy == "fedprox":
                     kw["prox_ref"] = [p.detach().clone() for p in gmodel.parameters()]
-                if strategy == "scaffold":
+                if strategy in SCAFFOLD_TYPE:
                     kw["scaffold_c"], kw["scaffold_ci"] = c_glob, c_loc[i]
                 steps[i] = local_train(m, *clients[i], cfg, seed * 100003 + t * 1009 + i, **kw)
                 states[i] = copy.deepcopy(m.state_dict())
                 deltas[i] = parameters_to_vector(m.parameters()).detach() - g_vec
-                if strategy == "scaffold":
+                if strategy in SCAFFOLD_TYPE:
                     if cfg.scaffold_option == "I":
                         m.load_state_dict(g_state)
                         new_ci = full_gradient(m, *clients[i], seed=seed + t)
@@ -251,14 +301,47 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
                     tracker.record(i, True)
             n_w = sizes[part] / sizes[part].sum()
             plist = [states[i] for i in part]
-            if strategy in ("fedavg", "fedprox", "fedavg_ft"):
+            if strategy in SERVER_OPT:
+                buf = weighted_state([{k: v for k, v in s.items() if k != "__dc"} for s in plist], n_w)
+                gmodel.load_state_dict(buf)                              # BatchNorm buffers size-weighted
+                d = sum(float(wi) * deltas[i] for wi, i in zip(n_w, part))
+                if strategy == "fedavgm":
+                    sopt["m"] = d if sopt["m"] is None else cfg.server_momentum * sopt["m"] + d
+                    step = cfg.server_lr * sopt["m"]
+                else:
+                    if sopt["m"] is None:
+                        sopt["m"] = torch.zeros_like(d); sopt["v"] = torch.full_like(d, cfg.adam_tau ** 2)
+                    sopt["m"] = cfg.adam_b1 * sopt["m"] + (1 - cfg.adam_b1) * d
+                    sopt["v"] = cfg.adam_b2 * sopt["v"] + (1 - cfg.adam_b2) * d * d
+                    step = cfg.server_lr * sopt["m"] / (sopt["v"].sqrt() + cfg.adam_tau)
+                vector_to_parameters(g_vec + step, gmodel.parameters())
+            elif strategy == "feddisco":
+                nn_ = sizes[part] / sizes[part].sum()
+                pw = np.maximum(nn_ - cfg.disco_a * disco_d[part] + cfg.disco_b, 0.0)
+                pw = pw / pw.sum() if pw.sum() > 0 else nn_
+                gmodel.load_state_dict(weighted_state([{k: v for k, v in s.items() if k != "__dc"} for s in plist], pw))
+                rec["disco_w"] = [round(float(x), 4) for x in pw]
+            elif strategy in ("fedavg", "fedprox", "fedavg_ft"):
                 new = weighted_state([{k: v for k, v in s.items() if k != "__dc"} for s in plist], n_w)
                 gmodel.load_state_dict(new)
-            elif strategy == "scaffold":
-                buf = weighted_state([{k: v for k, v in s.items() if k != "__dc"} for s in plist], n_w)
-                gmodel.load_state_dict(buf)                              # buffers N-weighted
-                vector_to_parameters(g_vec + torch.stack([deltas[i] for i in part]).mean(0),
-                                     gmodel.parameters())                # x <- x + mean(y_i - x)
+            elif strategy in SCAFFOLD_TYPE:
+                if strategy == "scaffold":
+                    agg_w = np.full(len(part), 1.0 / len(part))         # original SCAFFOLD: uniform mean
+                elif strategy == "scaffold_n":
+                    agg_w = n_w                                          # data-size weighted deltas
+                else:                                                    # raa_scaffold: reliability weights
+                    a_f1 = {}
+                    for i in part:
+                        m = model_fn()
+                        m.load_state_dict({k: v for k, v in states[i].items() if k != "__dc"})
+                        a_f1[i] = evaluate(anchor[1], predict(m, anchor[0]), labels)["macro_f1"]
+                    agg_w, comps = tracker.weights(part, deltas, a_f1, sizes)
+                    rec["raa"] = {int(i): comps[i] for i in part}
+                buf = weighted_state([{k: v for k, v in s.items() if k != "__dc"} for s in plist],
+                                     n_w if strategy == "scaffold" else agg_w)   # original: buffers N-weighted
+                gmodel.load_state_dict(buf)
+                vector_to_parameters(g_vec + sum(float(wi) * deltas[i] for wi, i in zip(agg_w, part)),
+                                     gmodel.parameters())                # x <- x + sum_i w_i (y_i - x)
                 dcs = [states[i]["__dc"] for i in part]
                 for j in range(len(c_glob)):
                     c_glob[j] = c_glob[j] + (len(part) / K) * sum(d[j] for d in dcs) / len(part)
@@ -283,7 +366,8 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
                     cs = float(torch.nn.functional.cosine_similarity(deltas[i], g0, dim=0))
                     tsi = max(cs, 0.0)
                     ts.append(tsi)
-                    upd += tsi * deltas[i] * (g0.norm() / (deltas[i].norm() + 1e-12))
+                    scale = (g0.norm() / (deltas[i].norm() + 1e-12)) if cfg.fltrust_rescale else 1.0
+                    upd += tsi * deltas[i] * scale
                 buf = weighted_state(plist, n_w)
                 gmodel.load_state_dict(buf)
                 vector_to_parameters(g_vec + (upd / sum(ts) if sum(ts) > 0 else 0 * upd), gmodel.parameters())
@@ -306,7 +390,8 @@ def run_federated(strategy, model_fn, clients, val, test, labels, cfg: FLConfig,
             ck = {"model": gmodel.state_dict(), "rng": part_rng.bit_generator.state, "records": records,
                   "elapsed": time.time() - t0, "round": t,
                   "tracker": (tracker.R, tracker.norms, tracker.hist) if tracker else None,
-                  "scaffold": (c_glob, c_loc) if strategy == "scaffold" else None}
+                  "scaffold": (c_glob, c_loc) if strategy in SCAFFOLD_TYPE else None,
+                  "sopt": sopt if strategy in SERVER_OPT else None}
             torch.save(ck, ckpt_path + ".tmp")
             os.replace(ckpt_path + ".tmp", ckpt_path)
     return records

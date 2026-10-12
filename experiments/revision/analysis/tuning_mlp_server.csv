@@ -1,0 +1,7 @@
+tag,dir0.5,temporal,avg
+fedadam_slr0.01,0.806,0.723,0.765
+fedadam_slr0.03,0.803,0.66,0.731
+fedadam_slr0.1,0.262,0.106,0.184
+fedavgm_slr0.1,0.794,0.689,0.742
+fedavgm_slr0.3,0.809,0.719,0.764
+fedavgm_slr1.0,0.81,0.013,0.411

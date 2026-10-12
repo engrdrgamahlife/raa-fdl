@@ -1,0 +1,36 @@
+{
+ "n_records_dedup": 329735,
+ "n_feature_vectors_with_conflicting_labels": 2135,
+ "n_records_involved": 4271,
+ "records_involved_by_class": {
+  "Benign": 2117,
+  "Infilteration": 2116,
+  "FTP-BruteForce": 12,
+  "DoS attacks-SlowHTTPTest": 10,
+  "Brute Force -Web": 6,
+  "SQL Injection": 6,
+  "SSH-Bruteforce": 3,
+  "Brute Force -XSS": 1
+ },
+ "class_pairs": {
+  "Benign | Infilteration": 2116,
+  "DoS attacks-SlowHTTPTest | FTP-BruteForce": 9,
+  "Brute Force -Web | SQL Injection": 5,
+  "FTP-BruteForce | SSH-Bruteforce": 2,
+  "Brute Force -XSS | SQL Injection": 1,
+  "DoS attacks-SlowHTTPTest | FTP-BruteForce | SSH-Bruteforce": 1,
+  "Benign | Brute Force -Web": 1
+ },
+ "kept_records_with_conflicting_labels": 362,
+ "kept_by_class": {
+  "Infilteration": 266,
+  "Benign": 59,
+  "FTP-BruteForce": 12,
+  "DoS attacks-SlowHTTPTest": 10,
+  "Brute Force -Web": 6,
+  "SQL Injection": 6,
+  "SSH-Bruteforce": 2,
+  "Brute Force -XSS": 1
+ },
+ "timestamp_missing": 0
+}

@@ -1,7 +1,7 @@
 """One CSE-CIC-IDS2018 federated run (strategy x scenario x seed), resumable from checkpoints."""
 import argparse, json, os, sys
 import numpy as np, pandas as pd
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+sys.path.insert(0, __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "..", ".."))
 from raafdl import data as D
 from raafdl.fl import FLConfig, run_federated
 from raafdl.models import build_model
@@ -18,16 +18,39 @@ ap.add_argument("--anchor", default="full", help="full | n<size> | norare")
 ap.add_argument("--unreliable", type=int, default=0)
 ap.add_argument("--drop", type=float, default=0.5)
 ap.add_argument("--tag", default="")
+ap.add_argument("--la", action="store_true", help="logit adjustment in local training")
+ap.add_argument("--la-tau", type=float, default=1.0)
+ap.add_argument("--la-eps", type=float, default=1.0)
+ap.add_argument("--la-multi", action="store_true", help="LA only on clients holding >= 2 classes")
+ap.add_argument("--fedrs", type=float, default=None, help="FedRS alpha for locally absent classes")
+ap.add_argument("--lr", type=float, default=0.01)
+ap.add_argument("--mu", type=float, default=0.1)
+ap.add_argument("--server-lr", type=float, default=1.0)
+ap.add_argument("--fltrust-noscale", action="store_true")
+ap.add_argument("--model", default="cnn", help="cnn | cnn_gn | mlp")
+ap.add_argument("--K", type=int, default=10, help="clients for iid/dirichlet partitions")
+ap.add_argument("--participation", type=float, default=1.0, help="per-round participation probability of every client")
+ap.add_argument("--poison", type=int, default=0, help="clients that relabel all their attack records as Benign")
+ap.add_argument("--data", default="full", help="full | clean (drop records whose feature vector has conflicting labels)")
+ap.add_argument("--split", default="random", help="random (stratified) | chrono (per-class chronological 70/15/15)")
+ap.add_argument("--drop-feat", default="", help="comma-separated feature names to remove, e.g. 'Dst Port'")
 ap.add_argument("--out", default="results/main")
 a = ap.parse_args()
 os.makedirs(a.out, exist_ok=True)
 tag = a.tag or a.strategy
-K = 10
+K = a.K
 X, y, day = np.load("X.npy"), np.load("y.npy"), np.load("day.npy")
 info = json.load(open("prep_info.json"))
+tstamp = np.load("t.npy")
+if a.data == "clean":
+    keep = ~np.load("conflict_mask.npy"); X, y, day, tstamp = X[keep], y[keep], day[keep], tstamp[keep]
+if a.drop_feat:
+    cols = [i for i, f in enumerate(info["features"]) if f not in a.drop_feat.split(",")]
+    assert len(cols) == X.shape[1] - len(a.drop_feat.split(",")), "unknown feature name"
+    X = X[:, cols]
 labels = list(range(len(info["label_names"])))
 ds = D.Dataset(X, y, day, info["label_names"])
-sp = D.split_and_scale(ds, a.seed)
+sp = D.split_and_scale(ds, a.seed) if a.split == "random" else D.split_chrono(ds, tstamp, a.seed)
 ytr = sp.train[1]
 if a.scenario == "iid":
     parts = D.partition(ytr, sp.g_train, "iid", K, a.seed)
@@ -50,7 +73,11 @@ elif a.anchor == "norare":
     cnt = np.bincount(yv, minlength=len(labels)); present = [c for c in np.argsort(cnt) if cnt[c] > 0]
     rare = present[: len(present) // 2]; i = np.where(~np.isin(yv, rare))[0]; anchor = (Xv[i], yv[i])
 
-drop = [0.0] * K
+drop = [1.0 - a.participation] * K
+if a.poison:
+    benign = info["label_names"].index("Benign")
+    for i in np.random.default_rng(999).choice(K, a.poison, replace=False):
+        yc = clients[i][1].copy(); yc[:] = benign; clients[i] = (clients[i][0], yc)
 if a.unreliable:
     for i in np.random.default_rng(12345).choice(K, a.unreliable, replace=False):
         drop[i] = a.drop
@@ -69,10 +96,12 @@ if not os.path.exists(diag_path):
                "majority_test": majority_baseline(ytr, sp.test[1], labels),
                "anchor_size": int(len(anchor[1])), "n_train": int(len(ytr))}, open(diag_path, "w"), indent=1)
 
-cfg = FLConfig(rounds=a.rounds, local_epochs=3, batch=256, lr=0.01, eval_every=5, threads=1,
-               beta=tuple(float(v) for v in a.beta.split(",")), gamma=a.gamma, drop_probs=drop)
+cfg = FLConfig(rounds=a.rounds, local_epochs=3, batch=256, eval_every=5, threads=1,
+               beta=tuple(float(v) for v in a.beta.split(",")), gamma=a.gamma, drop_probs=drop, logit_adjust=a.la,
+               la_tau=a.la_tau, la_eps=a.la_eps, la_multi_only=a.la_multi, fedrs_alpha=a.fedrs, lr=a.lr, mu=a.mu,
+               server_lr=a.server_lr, fltrust_rescale=not a.fltrust_noscale)
 nf = X.shape[1]
-recs = run_federated(a.strategy, lambda: build_model("cnn", nf, len(labels)), clients, sp.val, sp.test, labels,
+recs = run_federated(a.strategy, lambda: build_model(a.model, nf, len(labels)), clients, sp.val, sp.test, labels,
                      cfg, a.seed, anchor=anchor, ckpt_path=f"{a.out}/ckpt_{a.scenario}_{tag}_{a.seed}.pt")
 with open(f"{a.out}/rounds.jsonl", "a") as fr:
     for r in recs:

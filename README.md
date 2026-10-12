@@ -1,20 +1,20 @@
-# RAA-FDL: reliability-aware aggregation for federated intrusion detection
+# Heterogeneity remedies for federated intrusion detection (revision)
 
-Code, configurations and results for the paper *Reliability-Aware Aggregation for Federated Intrusion Detection:
-An Empirical Evaluation on Enterprise and 5G Core Traffic* (A. G. Gbaden, 2026).
+Code, configurations and per-seed results for the paper *Which Heterogeneity Remedy Helps Federated Intrusion Detection? A Tuned Comparison of Server-Side and Client-Side Methods on Enterprise and 5G Traffic* (A. G. Gbaden, revised version submitted to the Journal of Network and Systems Management, 2026).
 
-The repository compares RAA-FDL with FedAvg, FedProx, SCAFFOLD and FLTrust on CSE-CIC-IDS2018 and 5GAD. Every
-number in the paper comes from the files in `results/`.
+Every number in the revised paper is computed from the files in `results/` by the scripts in `experiments/revision/analysis/` and `paper/`. The results of the submitted version are kept unchanged in `results_submitted/`.
 
 ## Contents
 
 | Path | What it holds |
 | --- | --- |
-| `raafdl/` | The federated learning library: the five strategies, data partitioning, metrics, paired statistics, models |
-| `experiments/cic2018/` | Sampling, preprocessing, the run script, the job list (200 runs), analysis and the figure |
-| `experiments/5gad/` | Packet feature extraction, the run script, the job list (35 runs), analysis and the figure |
-| `results/cic2018/` | Final metrics of every run (`final.csv`), per-round logs (`rounds.jsonl.gz`), partition diagnostics |
-| `results/5gad/` | The same for 5GAD, at 50 and 100 rounds, plus the centralised baselines |
+| `raafdl/` | Federated learning library: 15 strategies (FedAvg, FedAvgM, FedAdam, FedProx, SCAFFOLD, SCAFFOLD-N, FLTrust and variants, FedDisco, RAA-FDL, logit adjustment, FedRS and combinations), partitioning, metrics, paired statistics, models (1-D CNN with BatchNorm or GroupNorm, MLP) |
+| `experiments/cic2018/` | CSE-CIC-IDS2018 preprocessing, timestamps and conflicting-label check (`prep_time.py`), run script, tuned centralised baselines |
+| `experiments/5gad/` | 5GAD packet feature extraction and run script (FakeAMFDelete excluded with `--exclude FakeAMFDelete`) |
+| `experiments/5g-nidd/` | 5G-NIDD preprocessing (two base stations as two sites) and run script |
+| `experiments/revision/` | Job list of all revision runs (`jobs.txt`), resumable queue, CCVR post-hoc calibration, analysis scripts and tuning tables |
+| `paper/` | Manuscript template and the scripts that fill every table and draw every figure |
+| `results/` | `final.csv` (final metrics per run), `rounds.jsonl.gz` (validation and test metrics every five rounds), `posthoc.csv` (operating point and CCVR), partition diagnostics |
 
 ## Installation
 
@@ -22,44 +22,39 @@ number in the paper comes from the files in `results/`.
 pip install -r requirements.txt
 ```
 
-The code runs on CPU. The paper's runs used one CPU core per run, about 10 minutes per CSE-CIC-IDS2018 run and
-20 minutes per 5GAD run.
+Everything runs on CPU. A 100-round CSE-CIC-IDS2018 run takes about 10 to 15 minutes on one core.
 
-## Reproducing the CSE-CIC-IDS2018 results
+## Reproducing
 
-1. Download the ten CSV files of "Processed Traffic Data for ML Algorithms" (6.4 GB):
-   `aws s3 sync --no-sign-request --region ca-central-1 "s3://cse-cic-ids2018/Processed Traffic Data for ML Algorithms/" cic`
-2. `cd experiments/cic2018 && python make_sample.py` writes `cic2018_sample.csv.gz` (uniform sample of up to
-   20,000 records per class per day).
-3. `python prep.py cic2018_sample.csv.gz 5000` removes identifiers, non-finite values, duplicates and constant
-   columns, caps each class at 5,000 records, and writes `X.npy`, `y.npy`, `day.npy` and `prep_info.json`.
-4. `python jobqueue.py` runs every line of `jobs.txt` (two at a time). Runs checkpoint every five rounds and resume
-   after an interruption.
-5. `python analyse_main.py`, `python fill_cic.py` and `python fig_cic.py` produce the tables and Fig. 2.
+1. Prepare the data as described in the paper (Section 4.1): `experiments/cic2018/prep.py` and `prep_time.py`, `experiments/5gad/extract.py`, `experiments/5g-nidd/prep_nidd.py` (input: `Combined.csv` of 5G-NIDD). Data paths are set at the top of each script.
+2. `cd experiments/revision && python make_jobs2.py 0.003 0.3 0.3 0.01` writes `jobs.txt` with the tuned learning rates; `python jobqueue.py` runs it. Runs checkpoint every five rounds and resume after an interruption.
+3. `python posthoc_cic.py`, `posthoc_g5.py` and `posthoc_nidd.py` compute operating-point metrics and CCVR.
+4. `python analysis/fill_rev.py`, then `python ../../paper/make_ms6.py` and `figs6.py`, produce all tables and figures.
 
-## Reproducing the 5GAD results
+## Main result
 
-1. Get the attack-isolated captures (`Attacks/<attack>/Attacks_<attack>.pcapng`) and
-   `Normal-1UE/allcap_00006_20220607091008.pcapng` from https://github.com/IdahoLabResearch/5GAD (Git LFS). Place
-   them as `att/Attacks/...` and `norm/allcap_00006.pcapng` inside `experiments/5gad/`.
-2. `python extract.py` writes the 135-feature packet table and its metadata.
-3. `python central.py` gives the centralised baselines; `OUT=results/5gad100 ROUNDS=100 python jobqueue.py` runs the
-   35 federated runs; `python fill5g.py results/5gad100` and `python fig5g.py` produce the tables and Fig. 3.
+Test macro-F1 on CSE-CIC-IDS2018 after 100 rounds, tuned protocol (mean over five seeds; per-day = each client holds whole capture days):
 
-## Main results
-
-Test macro-F1 on CSE-CIC-IDS2018 after 100 rounds (mean over five seeds):
-
-| Strategy | IID | Dirichlet 1.0 | Dirichlet 0.5 | Dirichlet 0.1 | Temporal |
+| Strategy | IID | Dirichlet 1.0 | Dirichlet 0.5 | Dirichlet 0.1 | Per-day |
 | --- | --- | --- | --- | --- | --- |
-| FedAvg | 0.518 | 0.507 | 0.476 | 0.356 | 0.060 |
-| FedProx | 0.517 | 0.506 | 0.475 | 0.354 | 0.052 |
-| SCAFFOLD | 0.517 | 0.489 | 0.474 | 0.279 | 0.132 |
-| FLTrust | 0.435 | 0.266 | 0.223 | 0.145 | 0.027 |
-| RAA-FDL | 0.518 | 0.508 | 0.478 | 0.312 | 0.061 |
+| FedAvg | 0.697 | 0.706 | 0.699 | 0.655 | 0.266 |
+| FedAvgM | 0.787 | 0.786 | 0.756 | 0.684 | 0.284 |
+| FedAdam | 0.788 | 0.777 | 0.772 | 0.712 | 0.298 |
+| FedProx | 0.682 | 0.690 | 0.691 | 0.645 | 0.253 |
+| FLTrust | 0.448 | 0.602 | 0.564 | 0.485 | 0.110 |
+| FLTrust, no rescaling | 0.573 | 0.632 | 0.623 | 0.565 | 0.221 |
+| FLTrust, 200-record root | 0.517 | 0.562 | 0.499 | 0.438 | 0.105 |
+| RAA-FDL | 0.691 | 0.702 | 0.703 | 0.654 | 0.184 |
+| FedDisco | 0.686 | 0.690 | 0.686 | 0.622 | 0.230 |
+| SCAFFOLD | 0.688 | 0.699 | 0.689 | 0.582 | 0.199 |
+| SCAFFOLD-N | 0.704 | 0.705 | 0.712 | 0.608 | 0.190 |
+| FedAvg + LA | 0.685 | 0.708 | 0.701 | 0.678 | 0.235 |
+| FedRS | 0.698 | 0.713 | 0.719 | 0.625 | 0.255 |
+| SCAFFOLD-N + LA | 0.690 | 0.705 | 0.707 | 0.580 | 0.209 |
+| SCAFFOLD-N + LA + RW | 0.708 | 0.709 | 0.711 | 0.633 | 0.146 |
 
-On 5GAD after 100 rounds, FedAvg reaches 0.938 and RAA-FDL 0.883 macro-F1. The paper explains both results.
+Server-side classifier calibration (CCVR) raises FedAvg on the per-day partition to 0.657. See the paper for 5GAD, 5G-NIDD and all robustness analyses.
 
 ## Licence
 
-MIT. The datasets keep their own licences: CSE-CIC-IDS2018 (Canadian Institute for Cybersecurity) and 5GAD (MIT).
+MIT, see `LICENSE`.

@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd, sys, json, os
 os.environ["OMP_NUM_THREADS"]="1"
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+sys.path.insert(0,"/home/claude/kit")
 from raafdl import data as D
 from raafdl.metrics import evaluate, majority_baseline
 from sklearn.linear_model import LogisticRegression
